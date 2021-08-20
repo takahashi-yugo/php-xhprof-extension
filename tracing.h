@@ -96,7 +96,21 @@ static zend_always_inline zend_string* tracing_get_function_name(zend_execute_da
 
     zend_string_addref(curr_func->common.function_name);
 
-    return curr_func->common.function_name;
+    // numbering PDOStatement::execute()
+    zend_string* current_class_name = tracing_get_class_name(data TSRMLS_CC);
+    zend_string* current_func_name = curr_func->common.function_name;
+    zend_string* db_class_name = zend_string_init("PDOStatement", strlen("PDOStatement"), 0);
+    zend_string* db_func_name = zend_string_init("execute", strlen("execute"), 0);
+    int executed = current_class_name != NULL && zend_string_equal_content(current_class_name, db_class_name) && zend_string_equal_content(current_func_name, db_func_name);
+    zend_string_free(db_class_name);
+    zend_string_free(db_func_name);
+    if (executed) {
+        TXRG(query_executed_num)++;
+        char str[100];
+        sprintf(str, "%s#%ld", ZSTR_VAL(current_func_name), TXRG(query_executed_num));
+        return zend_string_init(str, strlen(str), 0);
+    }
+    return current_func_name;
 }
 
 zend_always_inline static int tracing_enter_frame_callgraph(zend_string *root_symbol, zend_execute_data *execute_data TSRMLS_DC)

@@ -144,6 +144,8 @@ PHP_RINIT_FUNCTION(tideways_xhprof)
     TXRG(clock_source) = determine_clock_source(TXRG(clock_use_rdtsc));
 
     CG(compiler_options) = CG(compiler_options) | ZEND_COMPILE_NO_BUILTINS;
+    
+    TXRG(query_executed_num) = 0;
 
     return SUCCESS;
 }
